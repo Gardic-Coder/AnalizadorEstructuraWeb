@@ -1,8 +1,5 @@
 // Logica/WebAnalyzer.cpp
 #include "WebAnalyzer.h"
-#include <iostream>
-
-using namespace std;
 
 // Funcion para obtener el contenido HTML de una URL
 string WebAnalyzer::getContenidoHTML(const string& url) {
@@ -18,6 +15,10 @@ string WebAnalyzer::getContenidoHTML(const string& url) {
 			return size * nmemb;
 		});
 		curl_easy_setopt(curl, CURLOPT_WRITEDATA, &contenidoHTML);
+		
+		// Especificar la ruta al archivo de certificados CA
+        curl_easy_setopt(curl, CURLOPT_CAINFO, "cacert.pem");
+        
 		res = curl_easy_perform(curl);
 		curl_easy_cleanup(curl);
 
@@ -107,85 +108,69 @@ bool WebAnalyzer::verificarDominios() const {
 	return true;
 }
 
-
-
-
-/*
-
-// Callback para escribir datos recibidos por curl
-size_t WebAnalyzer::WriteCallback(void* contents, size_t size, size_t nmemb, std::string* s) {
-	s->append((char*)contents, size * nmemb);
-	return size * nmemb;
-}
-
-// Descargar el contenido HTML de una URL
-std::string WebAnalyzer::downloadHtml(const std::string& url) {
-	CURL* curl;
-	CURLcode res;
-	std::string readBuffer;
-
-	curl = curl_easy_init();
-	if(curl) {
-		// Configurar la URL a descargar
-		curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-		// Configurar la funcion de callback para escribir los datos recibidos
-		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
-		// Configurar los datos donde se almacenara el contenido recibido
-		curl_easy_setopt(curl, CURLOPT_WRITEDATA, &readBuffer);
-		// Ejecutar la solicitud HTTP
-		res = curl_easy_perform(curl);
-		// Limpiar la sesion de curl
-		curl_easy_cleanup(curl);
+// Funcion para extraer enlaces del mismo dominio
+vector<string> WebAnalyzer::extraerEnlacesDeURL(const string& _url) {
+	vector<string> links;
+	string contenidoHTML = getContenidoHTML(_url);
+	if (contenidoHTML.empty()) {
+		return links;
 	}
-	return readBuffer;
-}
 
-// Extraer enlaces de un documento HTML
-std::vector<std::string> WebAnalyzer::extractLinks(const std::string& html, const std::string& baseUrl) {
-	std::vector<std::string> links;
-	// Analizar el contenido HTML en memoria
-	htmlDocPtr doc = htmlReadMemory(html.c_str(), html.size(), baseUrl.c_str(), NULL, HTML_PARSE_NOERROR | HTML_PARSE_NOWARNING);
+	regex link_regex(R"(<a href="([^"]+))");
+	auto links_begin = sregex_iterator(contenidoHTML.begin(), contenidoHTML.end(), link_regex);
+	auto links_end = sregex_iterator();
 
-	if (doc) {
-		xmlNode* root = xmlDocGetRootElement(doc);
-		xmlNode* currentNode = root;
-
-		// Recorrer los nodos del documento HTML
-		while (currentNode) {
-			// Si el nodo es un elemento <a>
-			if (currentNode->type == XML_ELEMENT_NODE && xmlStrcasecmp(currentNode->name, (const xmlChar *)"a") == 0) {
-				// Obtener el atributo href
-				xmlChar* href = xmlGetProp(currentNode, (const xmlChar *)"href");
-				if (href) {
-					// Agregar el enlace a la lista de enlaces
-					links.push_back((char*)href);
-					xmlFree(href);
-				}
-			}
-			currentNode = currentNode->next;
+	for (sregex_iterator i = links_begin; i != links_end; ++i) {
+		smatch match = *i;
+		string link = match.str(1);
+		if (link.find(dominio) != string::npos) {
+			links.push_back(link);
 		}
-
-		// Liberar el documento HTML
-		xmlFreeDoc(doc);
 	}
+
 	return links;
 }
 
-// Verificar si un enlace es interno
-bool WebAnalyzer::isInternalLink(const std::string& link, const std::string& baseUrl) {
-	// Implementar la logica para verificar si el enlace pertenece al mismo dominio
-	// Por simplicidad, retornamos true para todos los enlaces (logica a implementar)
-	return true;
-}
+// Metodo para encontrar la ruta de enlaces que llevan a la palabra clave
+vector<string> WebAnalyzer::buscarCaminoPalbraClave() {
+	queue<string> cola;
+	unordered_map<string, string> padre; // Almacena el enlace padre de cada enlace
 
-// Encontrar enlaces que contienen una palabra clave en la URL
-std::vector<std::string> WebAnalyzer::findKeywordLinks(const std::vector<std::string>& links, const std::string& keyword) {
-	std::vector<std::string> keywordLinks;
-	// Copiar enlaces que contienen la palabra clave
-	std::copy_if(links.begin(), links.end(), std::back_inserter(keywordLinks),
-	[&keyword](const std::string& link) {
-		return link.find(keyword) != std::string::npos;
-	});
-	return keywordLinks;
+	cola.push(url);
+	padre[url] = ""; // La URL inicial no tiene padre
+
+	while (!cola.empty()) {
+		string actualURL = cola.front();
+		cola.pop();
+
+		// Extraer enlaces de la URL actual
+		vector<string> enlacesActuales = extraerEnlacesDeURL(actualURL);
+
+		for (const string& enlace : enlacesActuales) {
+			// Si el enlace contiene la palabra clave, reconstruir la ruta
+			if (enlace.find(palabraClave) != string::npos) {
+				vector<string> camino;
+				string nodo = enlace;
+
+				// Reconstruir la ruta desde el enlace final hasta la URL inicial
+				while (!nodo.empty()) {
+					camino.push_back(nodo);
+					nodo = padre[nodo];
+				}
+
+				// Invertir la ruta para que quede en el orden correcto
+				reverse(camino.begin(), camino.end());
+				return camino;
+			}
+
+			// Si el enlace no ha sido visitado, agregarlo a la cola
+			if (padre.find(enlace) == padre.end()) {
+				padre[enlace] = actualURL;
+				cola.push(enlace);
+			}
+		}
+	}
+
+	// Si no se encuentra la palabra clave, devolver un vector vacio
+	return {};
 }
-*/

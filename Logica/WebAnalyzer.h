@@ -5,7 +5,8 @@
 #include <vector>
 #include <regex>
 #include <curl/curl.h>
-//#include <libxml/HTMLparser.h>
+#include <queue>
+#include <unordered_map>
 
 using namespace std;
 
@@ -23,16 +24,15 @@ class WebAnalyzer {
 		// Funcion para extraer el dominio de la URL
 		void extraerDominio();
 
-		/*
-		// Callback para escribir datos recibidos por curl
-		static size_t WriteCallback(void* contents, size_t size, size_t nmemb, std::string* s);*/
+		// Funcion para extraer enlaces del mismo dominio
+		vector<string> extraerEnlacesDeURL(const string& _url);
 
 	public:
 		// Constructor.
 		WebAnalyzer();
 		// Destructor.
 		~WebAnalyzer();
-		
+
 		// Setters.
 		void setURL(const string& _url);
 		void setPalabraClave(string& _palabraClave);
@@ -45,21 +45,14 @@ class WebAnalyzer {
 
 		// Metodo para extraer enlaces del mismo dominio
 		void extraerEnlaces();
-		
+
 		// Metodo para verificar que todos los enlaces pertenecen al mismo dominio
 		bool verificarDominios() const;
-		/*
-		// Metodo para filtrar enlaces que contienen la palabra clave
-		vector<string> filter_links_by_keyword() const {
-			std::vector<std::string> result;
-			for (const auto& link : links) {
-				if (link.find(keyword) != std::string::npos) {
-					result.push_back(link);
-				}
-			}
-			return result;
-		}
 
+		// Metodo para encontrar la ruta de enlaces que llevan a la palabra clave
+		vector<string> buscarCaminoPalbraClave();
+
+		/*
 		// Metodo para guardar los enlaces en un archivo (delegado a la capa de datos)
 		void save_links_to_file(const std::string& filename) const {
 			std::ofstream file(filename);
@@ -75,17 +68,3 @@ class WebAnalyzer {
 		}
 		*/
 };
-
-/*
-// Descargar el contenido HTML de una URL
-string downloadHtml(const string& url);
-
-// Extraer enlaces de un documento HTML
-vector<string> extractLinks(const string& html, const string& baseUrl);
-
-// Verificar si un enlace es interno
-bool isInternalLink(const string& link, const string& baseUrl);
-
-// Encontrar enlaces que contienen una palabra clave en la URL
-vector<string> findKeywordLinks(const vector<string>& links, const string& keyword);
-};*/

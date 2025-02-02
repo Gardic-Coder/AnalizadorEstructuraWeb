@@ -2,33 +2,61 @@
 #include "WebAnalyzer.h"
 
 // Funcion para obtener el contenido HTML de una URL
-string WebAnalyzer::getContenidoHTML(const string& url) {
+void WebAnalyzer::Analyze() {
 	CURL* curl;
 	CURLcode res;
-	string contenidoHTML;
-
+	output.clear(); // Asegurarnos de que output esté limpio antes de la solicitud
+	curl_global_init(CURL_GLOBAL_DEFAULT);
 	curl = curl_easy_init();
 	if (curl) {
 		curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, [](void* ptr, size_t size, size_t nmemb, std::string* data) {
-			data->append((char*)ptr, size * nmemb);
-			return size * nmemb;
-		});
-		curl_easy_setopt(curl, CURLOPT_WRITEDATA, &contenidoHTML);
-		
-		// Especificar la ruta al archivo de certificados CA
-        curl_easy_setopt(curl, CURLOPT_CAINFO, "cacert.pem");
-        
+		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WebAnalyzer::WriteCallbackWrapper);
+		curl_easy_setopt(curl, CURLOPT_WRITEDATA, this);
+		curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+		curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+
+		// Impresión de depuración antes de la solicitud
+		//cout << "Contenido de output antes de curl_easy_perform: " << output << endl;
+
 		res = curl_easy_perform(curl);
-		curl_easy_cleanup(curl);
 
+		// Impresión de depuración después de la solicitud
 		if (res != CURLE_OK) {
-			cerr << "cURL error: " << curl_easy_strerror(res) << endl;
-			return "";
+			cout << "curl_easy_perform() failed: " << curl_easy_strerror(res) << endl;
+		} else {
+			//cout << "Contenido de output después de curl_easy_perform: " << output << endl;
 		}
+		curl_easy_cleanup(curl);
 	}
+	curl_global_cleanup();
 
-	return contenidoHTML;
+	ExtractLinks(output, dominio, enlaces);
+}
+
+size_t WebAnalyzer::WriteCallbackWrapper(void* contents, size_t size, size_t nmemb, void* userp) {
+	return static_cast<WebAnalyzer*>(userp)->WriteCallback(contents, size, nmemb);
+}
+
+size_t WebAnalyzer::WriteCallback(void* contents, size_t size, size_t nmemb) {
+	size_t totalSize = size * nmemb;
+	output.append(static_cast<char*>(contents), totalSize);
+	return totalSize;
+}
+
+// Metodo para extraer enlaces del mismo dominio.
+void WebAnalyzer::ExtractLinks(const string& htmlContent, const string& baseDomain, vector<string>& links) {
+	enlaces.clear();
+
+	regex urlRegex(R"((href|src)\s*=\s*['"]([^'"]+)['"])");
+	smatch urlMatches;
+	string::const_iterator searchStart(htmlContent.cbegin());
+	while (regex_search(searchStart, htmlContent.cend(), urlMatches, urlRegex)) {
+		string url = urlMatches[2].str();
+		if (url.find(baseDomain) != std::string::npos) {
+			links.push_back(url);
+		}
+		searchStart = urlMatches.suffix().first;
+	}
 }
 
 // Funcion para extraer el dominio de la URL
@@ -76,28 +104,6 @@ string WebAnalyzer::getDominio() const {
 	return dominio;
 }
 
-// Metodo para extraer enlaces del mismo dominio.
-void WebAnalyzer::extraerEnlaces() {
-	enlaces.clear();
-	string contenidoHTML = getContenidoHTML(url);
-	if (contenidoHTML.empty()) {
-		cerr << "Error: No se pudo obtener el contenido HTML." << endl;
-		return;
-	}
-
-	regex link_regex(R"(<a href="([^"]+))");
-	auto links_begin = sregex_iterator(contenidoHTML.begin(), contenidoHTML.end(), link_regex);
-	auto links_end = sregex_iterator();
-
-	for (sregex_iterator i = links_begin; i != links_end; ++i) {
-		smatch match = *i;
-		string link = match.str(1);
-		if (link.find(dominio) != string::npos) {
-			enlaces.push_back(link);
-		}
-	}
-}
-
 // Metodo para verificar que todos los enlaces pertenecen al mismo dominio
 bool WebAnalyzer::verificarDominios() const {
 	for (const auto& enlace : enlaces) {
@@ -107,30 +113,7 @@ bool WebAnalyzer::verificarDominios() const {
 	}
 	return true;
 }
-
-// Funcion para extraer enlaces del mismo dominio
-vector<string> WebAnalyzer::extraerEnlacesDeURL(const string& _url) {
-	vector<string> links;
-	string contenidoHTML = getContenidoHTML(_url);
-	if (contenidoHTML.empty()) {
-		return links;
-	}
-
-	regex link_regex(R"(<a href="([^"]+))");
-	auto links_begin = sregex_iterator(contenidoHTML.begin(), contenidoHTML.end(), link_regex);
-	auto links_end = sregex_iterator();
-
-	for (sregex_iterator i = links_begin; i != links_end; ++i) {
-		smatch match = *i;
-		string link = match.str(1);
-		if (link.find(dominio) != string::npos) {
-			links.push_back(link);
-		}
-	}
-
-	return links;
-}
-
+/*
 // Metodo para encontrar la ruta de enlaces que llevan a la palabra clave
 vector<string> WebAnalyzer::buscarCaminoPalbraClave() {
 	queue<string> cola;
@@ -173,4 +156,4 @@ vector<string> WebAnalyzer::buscarCaminoPalbraClave() {
 
 	// Si no se encuentra la palabra clave, devolver un vector vacio
 	return {};
-}
+}*/

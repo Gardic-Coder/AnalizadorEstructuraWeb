@@ -27,8 +27,9 @@ int main() {
 					string url = menu.solicitarDato<string>("Ingrese una Direccion URL: ");
 					if (esUrlValida(url)) {
 						cout << "				La URL es válida." << endl;
-						cout << url;
+						
 						sistema.setURL(url);
+						//cout << url << "	" << sistema.getDominio();
 					} else {
 						cout << "				La URL NO es válida." << endl;
 					}
@@ -43,16 +44,17 @@ int main() {
 					break;
 				}
 				case 2: {
-					sistema.extraerEnlaces();
+					sistema.Analyze();
 					if(sistema.verificarDominios()) {
 						listaDeEnlaces = sistema.getEnlaces();
+						cout << "				Lista de enlaces adquirida." << endl;
 					} else {
 						cout << "				Error." << endl;
 					}
 					break;
 				}
 				case 3: {
-					caminoDeEnlaces = sistema.buscarCaminoPalbraClave();
+					/*caminoDeEnlaces = sistema.buscarCaminoPalbraClave();
 					// Mostrar la ruta encontrada
 					cout << endl << PURPURA << SEPARADOR << RESET << endl << endl;
 					if (!caminoDeEnlaces.empty()) {
@@ -68,14 +70,14 @@ int main() {
 					} else {
 						cout << "				No se encontró una ruta que lleve a la palabra clave." << endl;
 					}
-					cout << endl << PURPURA << SEPARADOR << RESET << endl << endl;
+					cout << endl << PURPURA << SEPARADOR << RESET << endl << endl;*/
 					break;
 				}
 				case 4: {
 					cout << endl << PURPURA << SEPARADOR << RESET << endl << endl;
 					if (!listaDeEnlaces.empty()) {
 						cout << "				Lista de Enlaces:" << endl;
-						for (const string& enlace : caminoDeEnlaces) {
+						for (const string& enlace : listaDeEnlaces) {
 							cout << RESET << "				├── " << CYAN << enlace << RESET << endl;
 						}
 					} else {

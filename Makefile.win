@@ -4,8 +4,8 @@
 CPP      = g++.exe
 CC       = gcc.exe
 WINDRES  = windres.exe
-OBJ      = main.o Presentacion/Menu.o Logica/WebAnalyzer.o
-LINKOBJ  = main.o Presentacion/Menu.o Logica/WebAnalyzer.o
+OBJ      = main.o Presentacion/Menu.o Logica/WebAnalyzer.o Datos/Datos.o
+LINKOBJ  = main.o Presentacion/Menu.o Logica/WebAnalyzer.o Datos/Datos.o
 LIBS     = -L"D:/Dev-Cpp/TDM-GCC-64/lib" -L"D:/Dev-Cpp/TDM-GCC-64/x86_64-w64-mingw32/lib" -static-libgcc -LD:/curl-win64/curl-8.11.1_3-win64-mingw/lib -lcurl
 INCS     = -I"D:/Dev-Cpp/TDM-GCC-64/include" -I"D:/Dev-Cpp/TDM-GCC-64/x86_64-w64-mingw32/include" -I"D:/Dev-Cpp/TDM-GCC-64/lib/gcc/x86_64-w64-mingw32/9.2.0/include"
 CXXINCS  = -I"D:/Dev-Cpp/TDM-GCC-64/include" -I"D:/Dev-Cpp/TDM-GCC-64/x86_64-w64-mingw32/include" -I"D:/Dev-Cpp/TDM-GCC-64/lib/gcc/x86_64-w64-mingw32/9.2.0/include" -I"D:/Dev-Cpp/TDM-GCC-64/lib/gcc/x86_64-w64-mingw32/9.2.0/include/c++"
@@ -32,3 +32,6 @@ Presentacion/Menu.o: Presentacion/Menu.cpp
 
 Logica/WebAnalyzer.o: Logica/WebAnalyzer.cpp
 	$(CPP) -c Logica/WebAnalyzer.cpp -o Logica/WebAnalyzer.o $(CXXFLAGS)
+
+Datos/Datos.o: Datos/Datos.cpp
+	$(CPP) -c Datos/Datos.cpp -o Datos/Datos.o $(CXXFLAGS)

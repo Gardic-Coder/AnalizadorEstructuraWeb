@@ -29,7 +29,7 @@ IncludeVersionInfo=0
 SupportXPThemes=0
 CompilerSet=0
 CompilerSettings=0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;4;0;0;0
-UnitCount=5
+UnitCount=7
 
 [VersionInfo]
 Major=1
@@ -94,6 +94,26 @@ BuildCmd=
 FileName=Logica\WebAnalyzer.cpp
 CompileCpp=1
 Folder=Logica
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit6]
+FileName=Datos\Datos.h
+CompileCpp=1
+Folder=Datos
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit7]
+FileName=Datos\Datos.cpp
+CompileCpp=1
+Folder=Datos
 Compile=1
 Link=1
 Priority=1000

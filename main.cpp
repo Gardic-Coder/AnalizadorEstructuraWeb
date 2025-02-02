@@ -4,10 +4,9 @@
 #include <thread>
 #include "Presentacion/Menu.h"
 #include "Logica/WebAnalyzer.h"
+#include "Datos/Datos.h"
 
 bool esUrlValida(const string& url);
-
-bool cargando = false;
 
 int main() {
 	vector<string> menuOptions = {"Ingresar Enlace", "Ingresar Palabra Clave", "Analizar Enlace", "Buscar Palabra Clave", "Mostrar Enlaces", "Guardar", "Salir"};
@@ -15,6 +14,7 @@ int main() {
 	vector<string> caminoDeEnlaces;
 	MenuUI menu(80); // Ancho de la consola definido como 80 caracteres
 	WebAnalyzer sistema;
+	FileHandler controlArchivos("Lista de Enlaces");
 	bool salir = false;
 
 	while (!salir) {
@@ -59,6 +59,7 @@ int main() {
 						system("cls");
 						cout << endl << PURPURA << SEPARADOR << RESET << endl << endl;
 						cout << "				Ruta encontrada:" << endl;
+						cout << endl << PURPURA << SEPARADOR << RESET << endl << endl;
 						caminoDeEnlaces = sistema.getCaminoDeEnlaces();
 						int n = 0;
 						for (const string& enlace : caminoDeEnlaces) {
@@ -82,6 +83,7 @@ int main() {
 					cout << endl << PURPURA << SEPARADOR << RESET << endl << endl;
 					if (!listaDeEnlaces.empty()) {
 						cout << "				Lista de Enlaces:" << endl;
+						cout << endl << PURPURA << SEPARADOR << RESET << endl << endl;
 						for (const string& enlace : listaDeEnlaces) {
 							cout << RESET << "			├── " << CYAN << enlace << RESET << endl;
 						}
@@ -91,7 +93,15 @@ int main() {
 					break;
 				}
 				case 5: {
-					cout << "				En desarrollo." << endl;
+					if (menu.confirmacion("¿Desea sobrescribir el archivo de texto?")) {
+						controlArchivos.sobrescribirArchivo("URL Base: " + sistema.getURL());
+						controlArchivos.agregarAlArchivo(listaDeEnlaces);
+						cout << "				Informacion sobreescrita." << endl;
+					} else {
+						controlArchivos.agregarAlArchivo("URL Base: " + sistema.getURL());
+						controlArchivos.agregarAlArchivo(listaDeEnlaces);
+						cout << "				Informacion guardada." << endl;
+					}
 					break;
 				}
 				case 6: {

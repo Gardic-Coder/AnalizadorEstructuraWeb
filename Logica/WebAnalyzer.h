@@ -7,6 +7,7 @@
 #include <curl/curl.h>
 #include <queue>
 #include <unordered_map>
+#include <unordered_set>
 
 using namespace std;
 
@@ -17,7 +18,7 @@ class WebAnalyzer {
 		string dominio;
 		string output;
 		vector<string> enlaces;
-		//vector<string> caminoDeEnlaces;
+		vector<string> caminoDeEnlaces;
 
 		// Funcion para obtener el contenido HTML de una URL
 		static size_t WriteCallbackWrapper(void* contents, size_t size, size_t nmemb, void* userp);
@@ -44,11 +45,13 @@ class WebAnalyzer {
 		string getPalabraClave() const;
 		vector<string> getEnlaces() const;
 		string getDominio() const;
+		vector<string> getCaminoDeEnlaces() const;
 
 		// Metodo para verificar que todos los enlaces pertenecen al mismo dominio
 		bool verificarDominios() const;
 
 		// Metodo para encontrar la ruta de enlaces que llevan a la palabra clave
+		bool encontrarCaminoPalbraClave();
 		//vector<string> buscarCaminoPalbraClave();
 		
 		void Analyze();

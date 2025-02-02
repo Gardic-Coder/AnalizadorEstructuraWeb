@@ -1,12 +1,13 @@
 #include <iostream>
 #include <string>
 #include <regex>
+#include <thread>
 #include "Presentacion/Menu.h"
 #include "Logica/WebAnalyzer.h"
 
-#include <thread>
-
 bool esUrlValida(const string& url);
+
+bool cargando = false;
 
 int main() {
 	vector<string> menuOptions = {"Ingresar Enlace", "Ingresar Palabra Clave", "Analizar Enlace", "Buscar Palabra Clave", "Mostrar Enlaces", "Guardar", "Salir"};
@@ -27,7 +28,7 @@ int main() {
 					string url = menu.solicitarDato<string>("Ingrese una Direccion URL: ");
 					if (esUrlValida(url)) {
 						cout << "				La URL es válida." << endl;
-						
+
 						sistema.setURL(url);
 						//cout << url << "	" << sistema.getDominio();
 					} else {
@@ -47,16 +48,18 @@ int main() {
 						listaDeEnlaces = sistema.getEnlaces();
 						cout << "				Lista de enlaces adquirida." << endl;
 					} else {
-						cout << "				Error." << endl;
+						cout << "				Error. No se pudo adquirir la lista de enlaces." << endl;
 					}
 					break;
 				}
 				case 3: {
-					/*caminoDeEnlaces = sistema.buscarCaminoPalbraClave();
-					// Mostrar la ruta encontrada
-					cout << endl << PURPURA << SEPARADOR << RESET << endl << endl;
-					if (!caminoDeEnlaces.empty()) {
+					menu.iniciarPantallaDeCarga();
+					if (sistema.encontrarCaminoPalbraClave()) {
+						menu.detenerPantallaDeCarga();
+						system("cls");
+						cout << endl << PURPURA << SEPARADOR << RESET << endl << endl;
 						cout << "				Ruta encontrada:" << endl;
+						caminoDeEnlaces = sistema.getCaminoDeEnlaces();
 						int n = 0;
 						for (const string& enlace : caminoDeEnlaces) {
 							for (int i = 0; i < n; i++) {
@@ -66,17 +69,21 @@ int main() {
 							n++;
 						}
 					} else {
+						menu.detenerPantallaDeCarga();
+						system("cls");
+						cout << endl << PURPURA << SEPARADOR << RESET << endl << endl;
 						cout << "				No se encontró una ruta que lleve a la palabra clave." << endl;
 					}
-					*/
+
 					break;
 				}
 				case 4: {
+					system("cls");
 					cout << endl << PURPURA << SEPARADOR << RESET << endl << endl;
 					if (!listaDeEnlaces.empty()) {
 						cout << "				Lista de Enlaces:" << endl;
 						for (const string& enlace : listaDeEnlaces) {
-							cout << RESET << "				├── " << CYAN << enlace << RESET << endl;
+							cout << RESET << "			├── " << CYAN << enlace << RESET << endl;
 						}
 					} else {
 						cout << "				No hay enlaces guardados." << endl;
@@ -84,7 +91,7 @@ int main() {
 					break;
 				}
 				case 5: {
-						cout << "				En desarrollo." << endl;
+					cout << "				En desarrollo." << endl;
 					break;
 				}
 				case 6: {
@@ -97,30 +104,7 @@ int main() {
 			}
 			cout << endl << PURPURA << SEPARADOR << RESET << endl << endl;
 			getch();
-
-			/*if (opcionSeleccionada == 0) { // Cuando seleccionamos "Inicio" para probar
-				menu.transicionDeslizante(menuOptions, subMenuOptions);
-				while (true) { // Permitir navegar en el submenú sin mostrar la transición de nuevo
-					menu.mostrarMenu(subMenuOptions);
-					MenuUI::Tecla subTecla = menu.getTecla();
-					if (subTecla == MenuUI::ENTER || subTecla == MenuUI::ESCAPE) {
-						break; // Salir del submenú al presionar Enter o Escape
-					}
-					menu.moverCursor(subMenuOptions, subTecla);
-				}
-			} else if (opcionSeleccionada == 2) { // Solicitar Dato
-
-
-				cout << endl << PURPURA << SEPARADOR << RESET << endl << endl;
-				getch();
-			} else if (opcionSeleccionada == 3) {
-				if (menu.confirmacion("¿Estas seguro que deseas salir?")) {
-					cout << "Saliendo del menú..." << endl;
-					break;
-				} else {
-					menu.mostrarMenu(menuOptions);
-				}
-			}*/
+			
 		} else if (tecla == MenuUI::ESCAPE) {
 			if (menu.confirmacion("¿Estás seguro que deseas salir?")) {
 				cout << "Saliendo del menú..." << endl;

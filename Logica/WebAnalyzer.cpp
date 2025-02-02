@@ -104,8 +104,13 @@ string WebAnalyzer::getDominio() const {
 	return dominio;
 }
 
+vector<string> WebAnalyzer::getCaminoDeEnlaces() const {
+	return caminoDeEnlaces;
+}
+
 // Metodo para verificar que todos los enlaces pertenecen al mismo dominio
 bool WebAnalyzer::verificarDominios() const {
+	if(enlaces.empty()) return false;
 	for (const auto& enlace : enlaces) {
 		if (enlace.find(dominio) == string::npos) {
 			return false;
@@ -113,8 +118,60 @@ bool WebAnalyzer::verificarDominios() const {
 	}
 	return true;
 }
-/*
+
 // Metodo para encontrar la ruta de enlaces que llevan a la palabra clave
+bool WebAnalyzer::encontrarCaminoPalbraClave() {
+	queue<string> cola;
+	unordered_set<string> visitado;
+	unordered_map<string, string> mapaDePadres;
+
+	cola.push(url);
+	visitado.insert(url);
+
+	while (!cola.empty()) {
+		string actualUrl = cola.front();
+		cola.pop();
+		output.clear();
+
+		CURL* curl = curl_easy_init();
+		if (curl) {
+			curl_easy_setopt(curl, CURLOPT_URL, actualUrl.c_str());
+			curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallbackWrapper);
+			curl_easy_setopt(curl, CURLOPT_WRITEDATA, this);
+			curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+			curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+			CURLcode res = curl_easy_perform(curl);
+			curl_easy_cleanup(curl);
+
+			if (res == CURLE_OK) {
+				vector<string> links;
+				ExtractLinks(output, dominio, links);
+
+				for (const string& link : links) {
+					if (link.find(palabraClave) != string::npos) {
+						caminoDeEnlaces.push_back(link);
+						string padre = actualUrl;
+						while (padre != url) {
+							caminoDeEnlaces.push_back(padre);
+							padre = mapaDePadres[padre];
+						}
+						caminoDeEnlaces.push_back(url);
+						reverse(caminoDeEnlaces.begin(), caminoDeEnlaces.end());
+						return true;
+					}
+
+					if (visitado.find(link) == visitado.end()) {
+						cola.push(link);
+						visitado.insert(link);
+						mapaDePadres[link] = actualUrl;
+					}
+				}
+			}
+		}
+	}
+	return false;
+}
+/*
 vector<string> WebAnalyzer::buscarCaminoPalbraClave() {
 	queue<string> cola;
 	unordered_map<string, string> padre; // Almacena el enlace padre de cada enlace

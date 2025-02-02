@@ -27,34 +27,32 @@ int main() {
 					string url = menu.solicitarDato<string>("Ingrese una Direccion URL: ");
 					if (esUrlValida(url)) {
 						cout << "				La URL es válida." << endl;
+						
 						sistema.setURL(url);
-						cout << url << "	" << sistema.getDominio();
+						//cout << url << "	" << sistema.getDominio();
 					} else {
 						cout << "				La URL NO es válida." << endl;
 					}
-					cout << endl << PURPURA << SEPARADOR << RESET << endl << endl;
 					break;
 				}
 				case 1: {
 					string palabraClave = menu.solicitarDato<string>("Ingrese una Palabra Clave: ");
 					sistema.setPalabraClave(palabraClave);
 					cout << "				Palabra Clave Guardada." << endl;
-					cout << endl << PURPURA << SEPARADOR << RESET << endl << endl;
 					break;
 				}
 				case 2: {
-					sistema.analizador();
-					//sistema.extraerEnlaces();
-					listaDeEnlaces = sistema.getEnlaces();
+					sistema.Analyze();
 					if(sistema.verificarDominios()) {
-						
+						listaDeEnlaces = sistema.getEnlaces();
+						cout << "				Lista de enlaces adquirida." << endl;
 					} else {
 						cout << "				Error." << endl;
 					}
 					break;
 				}
 				case 3: {
-					caminoDeEnlaces = sistema.buscarCaminoPalbraClave();
+					/*caminoDeEnlaces = sistema.buscarCaminoPalbraClave();
 					// Mostrar la ruta encontrada
 					cout << endl << PURPURA << SEPARADOR << RESET << endl << endl;
 					if (!caminoDeEnlaces.empty()) {
@@ -70,20 +68,19 @@ int main() {
 					} else {
 						cout << "				No se encontró una ruta que lleve a la palabra clave." << endl;
 					}
-					cout << endl << PURPURA << SEPARADOR << RESET << endl << endl;
+					*/
 					break;
 				}
 				case 4: {
 					cout << endl << PURPURA << SEPARADOR << RESET << endl << endl;
 					if (!listaDeEnlaces.empty()) {
 						cout << "				Lista de Enlaces:" << endl;
-						for (const string& enlace : caminoDeEnlaces) {
+						for (const string& enlace : listaDeEnlaces) {
 							cout << RESET << "				├── " << CYAN << enlace << RESET << endl;
 						}
 					} else {
 						cout << "				No hay enlaces guardados." << endl;
 					}
-					cout << endl << PURPURA << SEPARADOR << RESET << endl << endl;
 					break;
 				}
 				case 5: {
@@ -98,6 +95,7 @@ int main() {
 					break;
 				}
 			}
+			cout << endl << PURPURA << SEPARADOR << RESET << endl << endl;
 			getch();
 
 			/*if (opcionSeleccionada == 0) { // Cuando seleccionamos "Inicio" para probar

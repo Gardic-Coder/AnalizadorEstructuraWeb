@@ -15,25 +15,18 @@ class WebAnalyzer {
 		string url;
 		string palabraClave;
 		string dominio;
-		string output;  // Moved output to be a class member
+		string output;
 		vector<string> enlaces;
-		
 		//vector<string> caminoDeEnlaces;
 
 		// Funcion para obtener el contenido HTML de una URL
-		string getContenidoHTML(const string& url);
+		static size_t WriteCallbackWrapper(void* contents, size_t size, size_t nmemb, void* userp);
+		size_t WriteCallback(void* contents, size_t size, size_t nmemb);
 
 		// Funcion para extraer el dominio de la URL
 		void extraerDominio();
 
-		// Funcion para extraer enlaces del mismo dominio
-		vector<string> extraerEnlacesDeURL(const string& _url);
-		
-		size_t WriteCallback(void* contents, size_t size, size_t nmemb);
-		
-		static size_t WriteCallbackWrapper(void* contents, size_t size, size_t nmemb, void* userp);
-
-
+		// Metodo para extraer enlaces del mismo dominio
 		void ExtractLinks(const string& htmlContent, const string& baseDomain, vector<string>& links);
 
 	public:
@@ -52,17 +45,13 @@ class WebAnalyzer {
 		vector<string> getEnlaces() const;
 		string getDominio() const;
 
-		// Metodo para extraer enlaces del mismo dominio
-		void extraerEnlaces();
-
 		// Metodo para verificar que todos los enlaces pertenecen al mismo dominio
 		bool verificarDominios() const;
 
 		// Metodo para encontrar la ruta de enlaces que llevan a la palabra clave
-		vector<string> buscarCaminoPalbraClave();
-
-		void analizador();
-		//string ExtractDomain(const string& url);
+		//vector<string> buscarCaminoPalbraClave();
+		
+		void Analyze();
 
 		/*
 		// Metodo para guardar los enlaces en un archivo (delegado a la capa de datos)

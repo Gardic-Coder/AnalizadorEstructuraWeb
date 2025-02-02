@@ -2,6 +2,7 @@
 #include <string>
 #include <regex>
 #include "Presentacion/Menu.h"
+#include "Logica/WebAnalyzer.h"
 
 #include <thread>
 
@@ -9,8 +10,10 @@ bool esUrlValida(const string& url);
 
 int main() {
 	vector<string> menuOptions = {"Ingresar Enlace", "Ingresar Palabra Clave", "Analizar Enlace", "Buscar Palabra Clave", "Mostrar Enlaces", "Guardar", "Salir"};
-	vector<string> subMenuOptions = {"Configurar", "Volver"};
+	vector<string> listaDeEnlaces;
+	vector<string> caminoDeEnlaces;
 	MenuUI menu(80); // Ancho de la consola definido como 80 caracteres
+	WebAnalyzer sistema;
 	bool salir = false;
 
 	while (!salir) {
@@ -24,6 +27,9 @@ int main() {
 					string url = menu.solicitarDato<string>("Ingrese una Direccion URL: ");
 					if (esUrlValida(url)) {
 						cout << "				La URL es válida." << endl;
+						
+						sistema.setURL(url);
+						//cout << url << "	" << sistema.getDominio();
 					} else {
 						cout << "				La URL NO es válida." << endl;
 					}
@@ -31,22 +37,54 @@ int main() {
 				}
 				case 1: {
 					string palabraClave = menu.solicitarDato<string>("Ingrese una Palabra Clave: ");
+					sistema.setPalabraClave(palabraClave);
+					cout << "				Palabra Clave Guardada." << endl;
 					break;
 				}
 				case 2: {
-
+					sistema.Analyze();
+					if(sistema.verificarDominios()) {
+						listaDeEnlaces = sistema.getEnlaces();
+						cout << "				Lista de enlaces adquirida." << endl;
+					} else {
+						cout << "				Error." << endl;
+					}
 					break;
 				}
 				case 3: {
-
+					/*caminoDeEnlaces = sistema.buscarCaminoPalbraClave();
+					// Mostrar la ruta encontrada
+					cout << endl << PURPURA << SEPARADOR << RESET << endl << endl;
+					if (!caminoDeEnlaces.empty()) {
+						cout << "				Ruta encontrada:" << endl;
+						int n = 0;
+						for (const string& enlace : caminoDeEnlaces) {
+							for (int i = 0; i < n; i++) {
+								cout << "|	";
+							}
+							cout << RESET << "├── " << CYAN << enlace << RESET << endl;
+							n++;
+						}
+					} else {
+						cout << "				No se encontró una ruta que lleve a la palabra clave." << endl;
+					}
+					*/
 					break;
 				}
 				case 4: {
-
+					cout << endl << PURPURA << SEPARADOR << RESET << endl << endl;
+					if (!listaDeEnlaces.empty()) {
+						cout << "				Lista de Enlaces:" << endl;
+						for (const string& enlace : listaDeEnlaces) {
+							cout << RESET << "				├── " << CYAN << enlace << RESET << endl;
+						}
+					} else {
+						cout << "				No hay enlaces guardados." << endl;
+					}
 					break;
 				}
 				case 5: {
-
+						cout << "				En desarrollo." << endl;
 					break;
 				}
 				case 6: {
@@ -57,6 +95,8 @@ int main() {
 					break;
 				}
 			}
+			cout << endl << PURPURA << SEPARADOR << RESET << endl << endl;
+			getch();
 
 			/*if (opcionSeleccionada == 0) { // Cuando seleccionamos "Inicio" para probar
 				menu.transicionDeslizante(menuOptions, subMenuOptions);

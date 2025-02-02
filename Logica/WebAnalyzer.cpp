@@ -1,35 +1,70 @@
 // Logica/WebAnalyzer.cpp
 #include "WebAnalyzer.h"
 
-// Funcion para obtener el contenido HTML de una URL
-string WebAnalyzer::getContenidoHTML(const string& url) {
+size_t WebAnalyzer::WriteCallback(void* contents, size_t size, size_t nmemb) {
+	size_t totalSize = size * nmemb;
+	output.append(static_cast<char*>(contents), totalSize);
+	return totalSize;
+}
+
+size_t WebAnalyzer::WriteCallbackWrapper(void* contents, size_t size, size_t nmemb, void* userp) {
+	return static_cast<WebAnalyzer*>(userp)->WriteCallback(contents, size, nmemb);
+}
+
+void WebAnalyzer::ExtractLinks(const string& htmlContent, const string& baseDomain, vector<string>& links) {
+	regex urlRegex(R"((href|src)\s*=\s*['"]([^'"]+)['"])");
+	smatch urlMatches;
+	string::const_iterator searchStart(htmlContent.cbegin());
+	while (regex_search(searchStart, htmlContent.cend(), urlMatches, urlRegex)) {
+		string url = urlMatches[2].str();
+		if (url.find(baseDomain) != string::npos) {
+			links.push_back(url);
+		}
+		searchStart = urlMatches.suffix().first;
+	}
+}
+
+void WebAnalyzer::analizador() {
 	CURL* curl;
 	CURLcode res;
-	string contenidoHTML;
-
+	output.clear(); // Asegurarnos de que output esté limpio antes de la solicitud
+	curl_global_init(CURL_GLOBAL_DEFAULT);
 	curl = curl_easy_init();
 	if (curl) {
 		curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, [](void* ptr, size_t size, size_t nmemb, std::string* data) {
-			data->append((char*)ptr, size * nmemb);
-			return size * nmemb;
-		});
-		curl_easy_setopt(curl, CURLOPT_WRITEDATA, &contenidoHTML);
-		
-		// Especificar la ruta al archivo de certificados CA
-        curl_easy_setopt(curl, CURLOPT_CAINFO, "cacert.pem");
-        
+		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallbackWrapper);
+		curl_easy_setopt(curl, CURLOPT_WRITEDATA, this);
+		curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L); // Desactivar verificación del certificado
+		curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L); // Desactivar verificación del host
+		// Agrega un punto de depuración antes de la llamada
+		cout << "Contenido de output antes de curl_easy_perform: " << output << endl;
 		res = curl_easy_perform(curl);
-		curl_easy_cleanup(curl);
-
+		// Agrega un punto de depuración después de la llamada
 		if (res != CURLE_OK) {
-			cerr << "cURL error: " << curl_easy_strerror(res) << endl;
-			return "";
+			cout << "curl_easy_perform() failed: " << curl_easy_strerror(res) << endl;
+		} else {
+			cout << "Contenido de output después de curl_easy_perform: " << output << endl;
 		}
+		if (res != CURLE_OK)
+			cout << "curl_easy_perform() failed: " << curl_easy_strerror(res) << endl;
+		curl_easy_cleanup(curl);
 	}
+	curl_global_cleanup();
 
-	return contenidoHTML;
+	ExtractLinks(output, dominio, enlaces); // Replace with the base domain you want to match
 }
+
+/*string WebAnalyzer::ExtractDomain(const string& _url) {
+	regex domainRegex(R"(^(?:https?://)?(?:www\.)?([^/]+))");
+	smatch domainMatch;
+	if (regex_search(_url, domainMatch, domainRegex)) {
+		return domainMatch[1].str();
+	}
+	return "";
+}*/
+
+// Funcion para obtener el contenido HTML de una URL
+
 
 // Funcion para extraer el dominio de la URL
 void WebAnalyzer::extraerDominio() {
@@ -52,6 +87,7 @@ WebAnalyzer::~WebAnalyzer() {
 // Setters.
 void WebAnalyzer::setURL(const string& _url) {
 	url = _url;
+	//dominio = ExtractDomain(url);
 	extraerDominio();
 }
 

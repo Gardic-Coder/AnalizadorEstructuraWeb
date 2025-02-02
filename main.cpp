@@ -33,14 +33,12 @@ int main() {
 					} else {
 						cout << "				La URL NO es válida." << endl;
 					}
-					cout << endl << PURPURA << SEPARADOR << RESET << endl << endl;
 					break;
 				}
 				case 1: {
 					string palabraClave = menu.solicitarDato<string>("Ingrese una Palabra Clave: ");
 					sistema.setPalabraClave(palabraClave);
 					cout << "				Palabra Clave Guardada." << endl;
-					cout << endl << PURPURA << SEPARADOR << RESET << endl << endl;
 					break;
 				}
 				case 2: {
@@ -70,7 +68,7 @@ int main() {
 					} else {
 						cout << "				No se encontró una ruta que lleve a la palabra clave." << endl;
 					}
-					cout << endl << PURPURA << SEPARADOR << RESET << endl << endl;*/
+					*/
 					break;
 				}
 				case 4: {
@@ -83,7 +81,6 @@ int main() {
 					} else {
 						cout << "				No hay enlaces guardados." << endl;
 					}
-					cout << endl << PURPURA << SEPARADOR << RESET << endl << endl;
 					break;
 				}
 				case 5: {
@@ -98,6 +95,7 @@ int main() {
 					break;
 				}
 			}
+			cout << endl << PURPURA << SEPARADOR << RESET << endl << endl;
 			getch();
 
 			/*if (opcionSeleccionada == 0) { // Cuando seleccionamos "Inicio" para probar

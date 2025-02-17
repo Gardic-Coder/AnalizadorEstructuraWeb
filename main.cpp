@@ -28,7 +28,6 @@ int main() {
 					string url = menu.solicitarDato<string>("Ingrese una Direccion URL: ");
 					if (esUrlValida(url)) {
 						cout << "				La URL es válida." << endl;
-
 						sistema.setURL(url);
 						//cout << url << "	" << sistema.getDominio();
 					} else {

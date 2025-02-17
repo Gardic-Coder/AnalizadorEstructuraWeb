@@ -45,9 +45,8 @@ size_t WebAnalyzer::WriteCallback(void* contents, size_t size, size_t nmemb) {
 
 // Metodo para extraer enlaces del mismo dominio.
 void WebAnalyzer::ExtractLinks(const string& htmlContent, const string& baseDomain, vector<string>& links) {
-	enlaces.clear();
-
-	regex urlRegex(R"((href|src)\s*=\s*['"]([^'"]+)['"])");
+	enlaces.clear(); 
+	regex urlRegex(R"((href|src)\s*=\s*['\"]([^'\"]+)['\"])");
 	smatch urlMatches;
 	string::const_iterator searchStart(htmlContent.cbegin());
 	while (regex_search(searchStart, htmlContent.cend(), urlMatches, urlRegex)) {
@@ -61,7 +60,7 @@ void WebAnalyzer::ExtractLinks(const string& htmlContent, const string& baseDoma
 
 // Funcion para extraer el dominio de la URL
 void WebAnalyzer::extraerDominio() {
-	regex domain_regex(R"(https?://([^/]+))");
+	regex domain_regex(R"(https?://(?:www\.)?([^/]+))");
 	smatch match;
 	if (regex_search(url, match, domain_regex)) {
 		dominio = match.str(1);
